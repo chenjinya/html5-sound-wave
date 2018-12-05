@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>波形</title>
+    <style>
+
+        #media {
+
+        }
+
+        #wave {
+            /*margin-top: -100%;*/
+        }
+    </style>
+</head>
+
+<body>
+
+<!--<video id="media" src="/wave2.mp4" autoplay ></video>-->
+<audio id="media" src="./test.mp3"  controls></audio>
+<canvas id="wave"></canvas>
+</body>
+
+<script>
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)(); // define
+    const media = document.getElementById('media');
+    const wave = document.getElementById('wave');
+    wave.width = document.body.clientWidth;
+    wave.height = 200;
+    media.load();
+    const analyser = audioCtx.createAnalyser();
+    const gainnode = audioCtx.createGain();
+
+    const source = audioCtx.createMediaElementSource(media);
+    source.connect(analyser);
+    analyser.connect(gainnode);
+    gainnode.connect(audioCtx.destination);
+    gainnode.gain.value = 1;
+
+    let fbl = analyser.frequencyBinCount;
+    let fd = new Uint8Array(fbl);
+
+    const cxt = wave.getContext("2d");
+    const column_count = 32;
+    const column_width = Math.floor(wave.width / column_count);
+
+    console.log("width", column_width, 'count', column_count)
+    const column_height_rate = wave.height / 256;
+    const raf = function () {
+
+        cxt.fillStyle = "#000";
+        let r = 0;
+        let g = 0;
+        let b = 0;
+        cxt.lineWidth = 1;
+        cxt.clearRect(0, 0, wave.width, wave.height)
+        analyser.getByteFrequencyData(fd);
+        // console.log(fd)
+
+        for (let i = 0; i < column_count; i++) {
+            let offset = (4);//采样率
+            r = 256 - fd[i * offset];
+            g = 256 - fd[i * offset];
+            b = 256 - fd[i * offset];
+            cxt.fillStyle = `rgb(${r},${g},${b})`;
+            cxt.fillRect(i * column_width, wave.height, column_width, column_height_rate * -fd[i * offset]);
+
+            cxt.strokeStyle = "#FFF";
+            cxt.strokeRect(i * column_width, wave.height, column_width, column_height_rate * -fd[i * offset]);
+            cxt.strokeText('' + fd[i * offset], i * column_width, wave.height - column_height_rate * fd[i * offset] + 20);
+        }
+
+        // console.log(showFD);
+        requestAnimationFrame(function () {
+            raf();
+        });
+    };
+    raf();
+
+
+</script>
+
+</html>
