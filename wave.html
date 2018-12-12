@@ -7,28 +7,75 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>波形</title>
     <style>
+        #media {}
 
-        #media {
+        input {
+            border: 1px solid #EEE;
+            padding: 4px 8px;
+            margin: 4px;
+            outline: none;
+        }
 
+        input:hover {
+            border-color: #999;
+            box-shadow: 1px 1px 2px #EEE;
+        }
+
+        input:focus {
+            border-color: #333;
+            box-shadow: 1px 1px 2px #AAA;
+        }
+
+        button {
+            border: 1px solid #EEE;
+            background: #EEE;
+            color: #000;
+            padding: 4px 8px;
+            border-radius: 4px;
+            outline: none;
+            margin: 4px;
+            min-width: 80px;
+        }
+
+        button:hover {
+            background: #DDD;
+            box-shadow: 1px 1px 2px #EEE;
+        }
+
+        button:active {
+            background: #000;
+            color: #FFF;
+            box-shadow: 1px 1px 2px #AAA;
         }
 
         #wave {
             /*margin-top: -100%;*/
+            background: #000;
         }
     </style>
 </head>
 
 <body>
 
-<!--<video id="media" src="/wave2.mp4" autoplay ></video>-->
-<audio id="media" src="./test.mp3"  controls></audio>
-<canvas id="wave"></canvas>
+    <!--<video id="media" src="/wave2.mp4" autoplay ></video>-->
+    <audio id="media" src="./test.mp3" controls></audio>
+    <canvas id="wave"></canvas>
+    <button onclick="javascript: waveStyle = 'none' ">None</button>
+    <button onclick="javascript: open_fb_num = !open_fb_num ">Bytes</button>
+    <button onclick="javascript: open_stroke_effect = !open_stroke_effect ">Stroke</button>
+    <button onclick="javascript: waveStyle = 'block mirror' ">Block Mirror</button>
+    <button onclick="javascript: waveStyle = 'block stroke' ">Block Stroke</button>
+    <button onclick="javascript: waveStyle = 'block top' ">Block Top</button>
+    <button onclick="javascript: waveStyle = 'block' ">Block</button>
+    <button onclick="javascript: waveStyle = 'block pure' ">Block Pure</button>
+    <button onclick="javascript: waveStyle = 'block colorful' ">Block Colorful</button>
 </body>
 
 <script>
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)(); // define
     const media = document.getElementById('media');
     const wave = document.getElementById('wave');
+    let waveStyle = '';
     wave.width = document.body.clientWidth;
     wave.height = 200;
     media.load();
@@ -44,34 +91,220 @@
     let fbl = analyser.frequencyBinCount;
     let fd = new Uint8Array(fbl);
 
-    const cxt = wave.getContext("2d");
-    const column_count = 32;
+    const ctx = wave.getContext("2d");
+    const column_count = 32;//列数
+    const offset = 1024 / column_count;//采样率
     const column_width = Math.floor(wave.width / column_count);
 
     console.log("width", column_width, 'count', column_count)
     const column_height_rate = wave.height / 256;
+    let open_stroke_effect = true;
+    let open_fb_num = false;
+    let top_row_block_y = [];
+
+    const style_addon_shadow = function (color) {
+        ctx.shadowColor = color;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+        ctx.shadowBlur = 10;
+
+    }
+
+    const style_block_mirror = function (col) {
+        const coloumnHeight = column_height_rate * fd[col * offset];
+        const coloumnMargin = 4;
+        const color = '#FFF';
+        ctx.strokeStyle = color;
+
+        ctx.strokeStyle = "#fff";
+        style_addon_shadow(`#fff`);
+        ctx.strokeRect(col * column_width + coloumnMargin, wave.height / 2 + coloumnHeight / 2, 2, -coloumnHeight);
+
+        // style_addon_shadow(color);
+    }
+    const style_stroke = function (col) {
+        open_stroke_effect = true;
+        const coloumnHeight = column_height_rate * fd[col * offset];
+        const coloumnMargin = 4;
+        const color = '#FFF';
+        var gradient = ctx.createLinearGradient(0, 0, 170, 0);
+        gradient.addColorStop("0", "magenta");
+        gradient.addColorStop("0.5", "blue");
+        gradient.addColorStop("1.0", "red");
+        // 用渐变进行填充
+        ctx.lineWidth = 2;
+        ctx.lineJoin = "round";
+        ctx.strokeStyle = gradient;
+
+        ctx.lineTo(col * column_width + column_width / 2, wave.height - coloumnHeight - 4);
+        style_addon_shadow(color);
+
+        // ctx.strokeStyle = color;
+
+
+    }
+
+    const style_block_stroke = function (col) {
+        const coloumnHeight = column_height_rate * fd[col * offset];
+        const coloumnMargin = 4;
+        ctx.strokeStyle = "#fff";
+        style_addon_shadow(`#fff`);
+        ctx.strokeRect(col * column_width + coloumnMargin, wave.height, column_width - coloumnMargin, -coloumnHeight);
+    }
+
+
+    const style_block_top = function (col) {
+        const coloumnHeight = column_height_rate * fd[col * offset];
+        const coloumnMargin = 4;
+        const color = '#FFF';
+        ctx.strokeStyle = color;
+        style_addon_shadow(color);
+        ctx.strokeRect(col * column_width + coloumnMargin, wave.height - coloumnHeight, column_width - coloumnMargin, 4);
+        let topBlockY = wave.height - coloumnHeight;
+        const topcolor = 'yellow';
+        if (topBlockY > 0 && (!top_row_block_y[col] || Math.abs(topBlockY) < Math.abs(top_row_block_y[col].y))) {
+            if (!top_row_block_y[col]) top_row_block_y[col] = {};
+            top_row_block_y[col].y = topBlockY;
+            top_row_block_y[col].color = topcolor;
+        }
+        if (top_row_block_y[col]) {
+            top_row_block_y[col].y += 1;
+            ctx.strokeStyle = top_row_block_y[col].color;
+            ctx.strokeRect(col * column_width + coloumnMargin, top_row_block_y[col].y, column_width - coloumnMargin, 4);
+
+        }
+    }
+
+    const style_block = function (col) {
+        const coloumnHeight = column_height_rate * fd[col * offset];
+        const rowHeight = 16;
+        const rowMargin = 4;
+        const coloumnMargin = 4;
+        const rowCount = Math.round(coloumnHeight / rowHeight)
+        for (let h = 0; h < rowCount; h++) {
+            r = 0 + 16 * h;
+            g = 0 + 16 * h;
+            b = 0 + 16 * h;
+            ctx.fillStyle = `rgb(${r},${g},${b})`;
+            style_addon_shadow(`rgb(${r},${g},${b})`);
+            ctx.fillRect(col * column_width + coloumnMargin, wave.height - h * rowHeight, column_width - coloumnMargin, rowHeight - rowMargin);
+        }
+    }
+
+    const style_block_pure = function (col) {
+        const coloumnHeight = column_height_rate * fd[col * offset];
+        const rowHeight = 16;
+        const rowMargin = 4;
+        const coloumnMargin = 4;
+        const rowCount = Math.round(coloumnHeight / rowHeight)
+        for (let h = 0; h < rowCount; h++) {
+            ctx.fillStyle = `rgb(255,255,255)`;
+            style_addon_shadow(`rgb(255,255,255)`);
+            ctx.fillRect(col * column_width + coloumnMargin, wave.height - h * rowHeight, column_width - coloumnMargin, rowHeight - rowMargin);
+        }
+    }
+
+
+    const style_block_colorful = function (col) {
+        const coloumnHeight = column_height_rate * fd[col * offset];
+        const rowHeight = 16;
+        const rowMargin = 2;
+        const coloumnMargin = 2;
+        const rowCount = Math.round(coloumnHeight / rowHeight)
+        const maxRowCount = Math.floor(wave.height / rowHeight)
+        const colorByte = 256 / rowCount;
+        // console.log('color byte', colorByte);
+        const R = 250;
+        const G = 180;
+        const B = 0;
+        let r = 0, g = G, b = B;
+        let topBlockY = 0;
+        let color = 'red';
+        for (let h = 0; h < rowCount; h++) {
+            r = 0 + colorByte * h;
+            if (r > R) {
+                r = R;
+                g = g - colorByte * (rowCount - h);
+            } else {
+                g = G;
+            }
+            if (h == maxRowCount - 1) {
+                r = R;
+                g = 0;
+            }
+            b = B;
+            color = `rgb(${r},${g},${b})`;
+            ctx.fillStyle = color;
+            style_addon_shadow(color);
+            let height = wave.height - h * rowHeight;
+            ctx.fillRect(col * column_width + coloumnMargin, height, column_width - coloumnMargin, rowHeight - rowMargin);
+            topBlockY = height;
+        }
+        if (topBlockY > 0 && (!top_row_block_y[col] || Math.abs(topBlockY) < Math.abs(top_row_block_y[col].y))) {
+            if (!top_row_block_y[col]) top_row_block_y[col] = {};
+            top_row_block_y[col].y = topBlockY;
+            top_row_block_y[col].color = color;
+        }
+        if (top_row_block_y[col]) {
+            top_row_block_y[col].y += 2;
+            ctx.fillStyle = top_row_block_y[col].color;
+            ctx.fillRect(col * column_width + coloumnMargin, top_row_block_y[col].y, column_width - coloumnMargin, rowHeight - 2 * rowMargin);
+
+        }
+    }
+
+
     const raf = function () {
 
-        cxt.fillStyle = "#000";
         let r = 0;
         let g = 0;
         let b = 0;
-        cxt.lineWidth = 1;
-        cxt.clearRect(0, 0, wave.width, wave.height)
+        ctx.lineWidth = 1;
+        ctx.clearRect(0, 0, wave.width, wave.height)
         analyser.getByteFrequencyData(fd);
         // console.log(fd)
 
-        for (let i = 0; i < column_count; i++) {
-            let offset = (4);//采样率
-            r = 256 - fd[i * offset];
-            g = 256 - fd[i * offset];
-            b = 256 - fd[i * offset];
-            cxt.fillStyle = `rgb(${r},${g},${b})`;
-            cxt.fillRect(i * column_width, wave.height, column_width, column_height_rate * -fd[i * offset]);
+        if (open_stroke_effect) {
+            ctx.beginPath();
+            ctx.moveTo(0, wave.height);
+        }
 
-            cxt.strokeStyle = "#FFF";
-            cxt.strokeRect(i * column_width, wave.height, column_width, column_height_rate * -fd[i * offset]);
-            cxt.strokeText('' + fd[i * offset], i * column_width, wave.height - column_height_rate * fd[i * offset] + 20);
+        for (let i = 0; i < column_count; i++) {
+            switch (waveStyle) {
+                case 'stroke':
+                    // style_stroke(i);
+                    break;
+                case 'block mirror':
+                    style_block_mirror(i);
+                    break;
+                case 'block stroke':
+                    style_block_stroke(i);
+                    break;
+                case 'block':
+                    style_block(i);
+                    break;
+                case 'block colorful':
+                    style_block_colorful(i);
+                    break;
+                case 'block pure':
+                    style_block_pure(i);
+                    break;
+                case 'block top':
+                    style_block_top(i);
+                    break;
+                default:
+                // style_stroke(i);
+            }
+
+            if (open_stroke_effect) {
+                style_stroke(i);
+            }
+
+            // rate height
+            open_fb_num && ctx.strokeText('' + fd[i * offset], i * column_width, wave.height - column_height_rate * fd[i * offset] + 20);
+        }
+        if (open_stroke_effect) {
+            ctx.stroke();
         }
 
         // console.log(showFD);
