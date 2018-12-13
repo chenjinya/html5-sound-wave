@@ -63,6 +63,7 @@
     <button onclick="javascript: waveStyle = 'none' ">None</button>
     <button onclick="javascript: open_fb_num = !open_fb_num ">Bytes</button>
     <button onclick="javascript: open_stroke_effect = !open_stroke_effect ">Stroke</button>
+    <button onclick="javascript: waveStyle = 'curve'; open_stroke_effect = false; ">Curve</button>
     <button onclick="javascript: waveStyle = 'block mirror' ">Block Mirror</button>
     <button onclick="javascript: waveStyle = 'block stroke' ">Block Stroke</button>
     <button onclick="javascript: waveStyle = 'block top' ">Block Top</button>
@@ -93,7 +94,7 @@
 
     const ctx = wave.getContext("2d");
     const column_count = 32;//列数
-    const offset = 1024 / column_count;//采样率
+    const offset = 1024 / column_count;// column_count;//采样率
     const column_width = Math.floor(wave.width / column_count);
 
     console.log("width", column_width, 'count', column_count)
@@ -122,6 +123,38 @@
 
         // style_addon_shadow(color);
     }
+
+    let style_curve_offset = 0;
+    const style_curve = function (col) {
+        const coloumnHeight = column_height_rate * fd[col * offset];
+
+        const preColumnHeight = col - 1 >= 0 ? column_height_rate * fd[(col - 1) * offset] : 0;
+        const nexColumnHeight = col + 1 < column_count ? column_height_rate * fd[(col + 1) * offset] : 0;
+
+        const coloumnMargin = 4;
+        const color = '#FFF';
+        ctx.strokeStyle = color;
+
+        // style_addon_shadow(color);
+        ctx.beginPath();
+        const preY = wave.height - (preColumnHeight);
+        const nexY = wave.height - (coloumnHeight);
+        const curY = wave.height - coloumnHeight;
+        const horizontal = wave.height / 2;
+        ctx.moveTo(style_curve_offset + col * column_width, horizontal);
+
+        ctx.quadraticCurveTo(
+            style_curve_offset + col * column_width + column_width / 4, horizontal - coloumnHeight,
+            style_curve_offset + col * column_width + column_width / 2, horizontal);
+        ctx.quadraticCurveTo(
+            style_curve_offset + col * column_width + column_width / 4 * 3, horizontal + coloumnHeight,
+            style_curve_offset + col * column_width + column_width, horizontal);
+        ctx.stroke();
+
+
+
+    }
+
     const style_stroke = function (col) {
         open_stroke_effect = true;
         const coloumnHeight = column_height_rate * fd[col * offset];
@@ -274,6 +307,9 @@
                 case 'stroke':
                     // style_stroke(i);
                     break;
+                case 'curve':
+                    style_curve(i);
+                    break;
                 case 'block mirror':
                     style_block_mirror(i);
                     break;
@@ -293,7 +329,7 @@
                     style_block_top(i);
                     break;
                 default:
-                // style_stroke(i);
+                // style_curve(i);
             }
 
             if (open_stroke_effect) {

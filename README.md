@@ -1,5 +1,8 @@
 # html5-sound-wave
 
+HTML 5 Music graph wave.
+
+声波、波形图、声音频率
 
 ![草稿](./1.png)
 ![草稿](./2.png)
