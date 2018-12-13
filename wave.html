@@ -117,8 +117,8 @@
         const color = '#FFF';
         ctx.strokeStyle = color;
 
-        ctx.strokeStyle = "#fff";
-        style_addon_shadow(`#fff`);
+        ctx.strokeStyle = color;
+        style_addon_shadow(color);
         ctx.strokeRect(col * column_width + coloumnMargin, wave.height / 2 + coloumnHeight / 2, 2, -coloumnHeight);
 
         // style_addon_shadow(color);
@@ -170,18 +170,41 @@
         ctx.strokeStyle = gradient;
 
         ctx.lineTo(col * column_width + column_width / 2, wave.height - coloumnHeight - 4);
-        style_addon_shadow(color);
+        // style_addon_shadow(color);
 
         // ctx.strokeStyle = color;
 
 
     }
 
-    const style_block_stroke = function (col) {
+    let style_column_animate_data = [];
+    const style_column_animate = function (col) {
+
         const coloumnHeight = column_height_rate * fd[col * offset];
         const coloumnMargin = 4;
-        ctx.strokeStyle = "#fff";
-        style_addon_shadow(`#fff`);
+
+        if (!style_column_animate_data[col] && coloumnHeight > column_height_rate * 200) {
+            style_column_animate_data[col] = wave.height;
+
+        }
+        if (style_column_animate_data[col]) {
+            ctx.strokeStyle = "#AAA";
+            style_addon_shadow(`#FFF`);
+            ctx.strokeRect(col * column_width + coloumnMargin, style_column_animate_data[col], column_width - coloumnMargin, column_width);
+            style_column_animate_data[col]--;
+            if (style_column_animate_data[col] <= 0) {
+                style_column_animate_data[col] = null;
+            }
+        }
+
+
+    }
+    const style_block_stroke = function (col) {
+        style_column_animate(col);
+        const coloumnHeight = column_height_rate * fd[col * offset];
+        const coloumnMargin = 4;
+        ctx.strokeStyle = "#FFF";
+        style_addon_shadow(`#FFF`);
         ctx.strokeRect(col * column_width + coloumnMargin, wave.height, column_width - coloumnMargin, -coloumnHeight);
     }
 
