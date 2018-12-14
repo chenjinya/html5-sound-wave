@@ -73,7 +73,8 @@
 </body>
 
 <script>
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)(); // define
+    const _AudioContext = window.AudioContext ? window.AudioContext : window.webkitAudioContext;
+    const audioCtx = new _AudioContext(); // define
     const media = document.getElementById('media');
     const wave = document.getElementById('wave');
     let waveStyle = '';
