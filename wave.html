@@ -258,12 +258,12 @@
     wave.width = document.body.clientWidth;
     wave.height = 200;
     media.load();
-    const analyser = audioCtx.createAnalyser();
-    const gainnode = audioCtx.createGain();
+    let analyser = audioCtx.createAnalyser();
+    let gainnode = audioCtx.createGain();
 
-    analyser.minDecibels = 0;
-    analyser.maxDecibels = 255;
-    const source = audioCtx.createMediaElementSource(media);
+    analyser.minDecibels = -90;
+    analyser.maxDecibels = -10;
+    let source = audioCtx.createMediaElementSource(media);
     source.connect(analyser);
     analyser.connect(gainnode);
     gainnode.connect(audioCtx.destination);
