@@ -332,7 +332,7 @@
             ctx.beginPath();
             ctx.moveTo(0, wave.height);
         }
-
+        logMonitor.innerHTML = "ready for loop ";
         for (let i = 0; i < column_count; i++) {
             switch (waveStyle) {
                 case 'stroke':
@@ -376,7 +376,6 @@
 
         // console.log(showFD);
         requestAnimationFrame(function () {
-            logMonitor.innerHTML = "requestAnimationFrame enter";
             raf();
         });
     };
