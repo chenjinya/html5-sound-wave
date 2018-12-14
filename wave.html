@@ -318,6 +318,7 @@
     }
 
 
+    let counting = 0;
     const raf = function () {
         // logMonitor.innerHTML = "raf enter";
         let r = 0;
@@ -373,7 +374,7 @@
         if (open_stroke_effect) {
             ctx.stroke();
         }
-        logMonitor.innerHTML = "loop done ";
+        logMonitor.innerHTML = "loop  " + counting++;
 
         // console.log(showFD);
         requestAnimationFrame(function () {
