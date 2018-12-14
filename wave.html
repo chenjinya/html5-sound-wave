@@ -270,19 +270,19 @@
     let fbl = analyser.frequencyBinCount;
     let fd = new Uint8Array(fbl);
 
+    const ctx = wave.getContext("2d");
+    const column_count = 32;//列数
+    const offset = 1024 / column_count;// column_count;//采样率
+    const column_width = Math.floor(wave.width / column_count);
+
+    console.log("width", column_width, 'count', column_count)
+    const column_height_rate = wave.height / 256;
+    let open_stroke_effect = true;
+    let open_fb_num = false;
+    let top_row_block_y = [];
+
     media.addEventListener('canplay', function () {
-        const ctx = wave.getContext("2d");
-        const column_count = 32;//列数
-        const offset = 1024 / column_count;// column_count;//采样率
-        const column_width = Math.floor(wave.width / column_count);
 
-        console.log("width", column_width, 'count', column_count)
-        const column_height_rate = wave.height / 256;
-        let open_stroke_effect = true;
-        let open_fb_num = false;
-        let top_row_block_y = [];
-
-        logMonitor.innerHTML = "init ok";
 
 
         const style_addon_shadow = function (color) {
