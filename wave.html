@@ -70,6 +70,10 @@
     <button onclick="javascript: waveStyle = 'block' ">Block</button>
     <button onclick="javascript: waveStyle = 'block pure' ">Block Pure</button>
     <button onclick="javascript: waveStyle = 'block colorful' ">Block Colorful</button>
+
+    <div id='logMonitor' class="log">
+
+    </div>
 </body>
 
 <script>
@@ -77,6 +81,7 @@
     const audioCtx = new _AudioContext(); // define
     const media = document.getElementById('media');
     const wave = document.getElementById('wave');
+    const logMonitor = document.getElementById('logMonitor');
     let waveStyle = '';
     wave.width = document.body.clientWidth;
     wave.height = 200;
@@ -103,6 +108,8 @@
     let open_stroke_effect = true;
     let open_fb_num = false;
     let top_row_block_y = [];
+
+    logMonitor.innerHTML = "init ok";
 
     const style_addon_shadow = function (color) {
         ctx.shadowColor = color;
@@ -312,7 +319,7 @@
 
 
     const raf = function () {
-
+        logMonitor.innerHTML = "raf enter";
         let r = 0;
         let g = 0;
         let b = 0;
@@ -369,6 +376,7 @@
 
         // console.log(showFD);
         requestAnimationFrame(function () {
+            logMonitor.innerHTML = "requestAnimationFrame enter";
             raf();
         });
     };
