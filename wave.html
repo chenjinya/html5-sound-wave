@@ -261,6 +261,8 @@
     const analyser = audioCtx.createAnalyser();
     const gainnode = audioCtx.createGain();
 
+    analyser.minDecibels = -90;
+    analyser.maxDecibels = -10;
     const source = audioCtx.createMediaElementSource(media);
     source.connect(analyser);
     analyser.connect(gainnode);
