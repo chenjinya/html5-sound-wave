@@ -119,6 +119,8 @@
     <button onclick="javascript: waveStyle = 'block' ">Block</button>
     <button onclick="javascript: waveStyle = 'block pure' ">Block Pure</button>
     <button onclick="javascript: waveStyle = 'block colorful' ">Block Colorful</button>
+    <hr>
+    <button onclick="javascript:  gainnode.gain.setValueAtTime(gainnode.gain.value ==  0 ? 1 : 0, audioCtx.currentTime); ">Mute</button>
 
     <button onclick="javascript: wave_type = wave_type == 'wave' ? 'frequency' : 'wave'; ">Switch Wave Type</button>
     <div id="LogMonitor"></div>
@@ -127,7 +129,7 @@
 <!-- <script src="./webaudit.js"></script> -->
 <script src="./vconsole.min.js"></script>
 <script>
-    // var vConsole = new VConsole();
+    var vConsole = new VConsole();
     const _AudioContext = window.AudioContext ? window.AudioContext : window.webkitAudioContext;
     const audioCtx = new _AudioContext(); // define
     const Media = document.getElementById('Media');
@@ -147,6 +149,7 @@
     source.connect(analyser);
     analyser.connect(gainnode);
     gainnode.connect(audioCtx.destination);
+    console.log(audioCtx.destination);
     gainnode.gain.value = 1;
     // analyser.fftSize = 2048;
     // analyser.fftSize = 64;
@@ -318,7 +321,7 @@
         const color = '#FFF';
         ctx.strokeStyle = color;
         style_addon_shadow(color);
-        ctx.strokeRect(col * COLUMN_WIDTH + coloumnMargin, Wave.height - coloumnHeight, COLUMN_WIDTH - coloumnMargin, 4);
+        ctx.strokeRect(col * COLUMN_WIDTH + coloumnMargin, Wave.height - coloumnHeight, COLUMN_WIDTH - coloumnMargin, 10);
         let topBlockY = Wave.height - coloumnHeight;
         const topcolor = 'yellow';
         if (topBlockY > 0 && (!top_row_y[col] || Math.abs(topBlockY) < Math.abs(top_row_y[col].y))) {
