@@ -2,67 +2,6 @@
 var vConsole = new VConsole();
 window.AudioContext = window.AudioContext ? window.AudioContext : window.webkitAudioContext
 
-
-
-const loadSource = function (url, callback, errorCallback) {
-    var loggedError = false;
-    var self = this;
-    let buffer = null;
-    var errorTrace = new Error().stack;
-
-    if (url != undefined && url != "") {
-        var request = new XMLHttpRequest();
-        request.addEventListener('progress', function (evt) {
-            console.log(evt);
-        }, false);
-        request.open('GET', url, true);
-        request.responseType = 'arraybuffer';
-
-        request.onload = function () {
-            if (request.status == 200) {
-                audioCtx.decodeAudioData(request.response,
-                    function (buff) {
-                        buffer = buff;
-                        source.buffer = buffer;
-                        callback && callback();
-                        source.start();
-                    },
-                    function (e) {
-                        console.error(e);
-                    }
-                );
-            }
-            else {
-                console.error(request);
-            }
-        };
-
-        // if there is another error, aside from 404...
-        request.onerror = function (e) {
-            console.error(e);
-        };
-
-        request.send();
-    }
-    else if (this.file != undefined) {
-        var reader = new FileReader();
-        var self = this;
-        reader.onload = function () {
-            ac.decodeAudioData(reader.result, function (buff) {
-                self.buffer = buff;
-                self.panner.inputChannels(buff.numberOfChannels);
-                if (callback) {
-                    callback && callback(self);
-                }
-            });
-        };
-        reader.onerror = function (e) {
-            console.error(e);
-        };
-        reader.readAsArrayBuffer(this.file);
-    }
-};
-
 const audioCtx = new AudioContext(); // define
 const Media = document.getElementById('Media');
 const Wave = document.getElementById('Wave');
@@ -77,9 +16,9 @@ let gainnode = audioCtx.createGain();
 
 // analyser.minDecibels = -90;
 // analyser.maxDecibels = -10;
-// let source = audioCtx.createMediaElementSource(Media);
-let source = audioCtx.createBufferSource();
-loadSource("./test.mp3");
+let source = audioCtx.createMediaElementSource(Media);
+// let source = audioCtx.createBufferSource();
+// loadSource("./test.mp3");
 source.connect(analyser);
 analyser.connect(gainnode);
 gainnode.connect(audioCtx.destination);
@@ -412,5 +351,4 @@ const raf = function () {
         raf();
     });
 };
-
 
