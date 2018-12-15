@@ -1,7 +1,6 @@
 
 var vConsole = new VConsole();
 
-const audioCtx = new AudioContext(); // define
 const Media = document.getElementById('Media');
 const Wave = document.getElementById('Wave');
 const LogMonitor = document.getElementById('LogMonitor');
@@ -13,6 +12,7 @@ Media.load();
 Media.addEventListener('canplay', function () {
 
     window.AudioContext = window.AudioContext ? window.AudioContext : window.webkitAudioContext
+    const audioCtx = new AudioContext(); // define
 
     let analyser = audioCtx.createAnalyser();
     let gainnode = audioCtx.createGain();
