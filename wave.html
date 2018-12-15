@@ -90,6 +90,9 @@
     <canvas id="Wave"></canvas>
     <ul>
         <li>
+            <a onclick="javascript: Media.src = './test0.mp3'; Media.play();">Music 0</a>
+        </li>
+        <li>
             <a onclick="javascript: Media.src = './test1.mp3'; Media.play();">Music 1</a>
         </li>
         <li>
@@ -155,7 +158,6 @@
     // analyser.fftSize = 64;
     let byteDataCount = analyser.frequencyBinCount;
     let byteData = new Uint8Array(byteDataCount);
-    let byteDataSample = byteData;
 
     //global constant
     const ctx = Wave.getContext("2d");
@@ -416,87 +418,69 @@
     }
     Media.addEventListener('canplay', function () {
 
-        const raf = function () {
-            // logMonitor.innerHTML = "raf enter";
 
-            ctx.lineWidth = 1;
-            ctx.clearRect(0, 0, Wave.width, Wave.height)
-            if (wave_type == 'wave') {
-                analyser.getByteTimeDomainData(byteData);
-            } else {
-                analyser.getByteFrequencyData(byteData);
-            }
-
-            // console.log(byteData)
-            // 
-
-            //logMonitor.innerHTML = byteData.join(",");
-            if (open_stroke_effect) {
-
-
-            }
-
-            for (let i = 0; i < COLUMN_COUNT; i++) {
-
-                byteDataSample = byteData;
-                // for (let _si = i * SAMPLE_OFFSET; _si < (i + 1) * SAMPLE_OFFSET; _si++) {
-                //     byteDataSample[i] += byteData[_si] == 0 ? 0 : byteData[_si];
-                // }
-                // LogMonitor.innerHTML = byteDataSample.join(",");
-                switch (waveStyle) {
-                    case 'stroke':
-                        // style_stroke(i);
-                        break;
-                    case 'curve':
-                        style_curve(i);
-                        break;
-                    case 'rect mirror':
-                        style_rect_mirror(i);
-                        break;
-                    case 'rect mirror2':
-                        style_rect_mirror2(i);
-                        break;
-                    case 'rect':
-                        style_rect(i);
-                        break;
-                    case 'rect top':
-                        style_rect_top(i);
-                        break;
-                    case 'block':
-                        style_block(i);
-                        break;
-                    case 'block colorful':
-                        style_block_colorful(i);
-                        break;
-                    case 'block pure':
-                        style_block_pure(i);
-                        break;
-
-                    default:
-                    // style_rect_mirror2(i);
-                }
-
-                if (open_stroke_effect) {
-                    style_stroke(i);
-                }
-
-                // rate height
-                open_byte_value && ctx.strokeText('' + byteData[i * SAMPLE_OFFSET], i * COLUMN_WIDTH, Wave.height - COLUMN_HEIGHT_RATE * byteData[i * SAMPLE_OFFSET] + 20);
-            }
-            if (open_stroke_effect) {
-                ctx.stroke();
-            }
-
-
-            // console.log(showFD);
-            requestAnimationFrame(function () {
-                raf();
-            });
-        };
         raf();
 
     })
 
+    const raf = function () {
+        ctx.lineWidth = 1;
+        ctx.clearRect(0, 0, Wave.width, Wave.height)
+        if (wave_type == 'wave') {
+            analyser.getByteTimeDomainData(byteData);
+        } else {
+            analyser.getByteFrequencyData(byteData);
+        }
+
+        for (let i = 0; i < COLUMN_COUNT; i++) {
+            switch (waveStyle) {
+                case 'stroke':
+                    // style_stroke(i);
+                    break;
+                case 'curve':
+                    style_curve(i);
+                    break;
+                case 'rect mirror':
+                    style_rect_mirror(i);
+                    break;
+                case 'rect mirror2':
+                    style_rect_mirror2(i);
+                    break;
+                case 'rect':
+                    style_rect(i);
+                    break;
+                case 'rect top':
+                    style_rect_top(i);
+                    break;
+                case 'block':
+                    style_block(i);
+                    break;
+                case 'block colorful':
+                    style_block_colorful(i);
+                    break;
+                case 'block pure':
+                    style_block_pure(i);
+                    break;
+
+                default:
+                // style_rect_mirror2(i);
+            }
+
+            if (open_stroke_effect) {
+                style_stroke(i);
+            }
+
+            // rate height
+            open_byte_value && ctx.strokeText('' + byteData[i * SAMPLE_OFFSET], i * COLUMN_WIDTH, Wave.height - COLUMN_HEIGHT_RATE * byteData[i * SAMPLE_OFFSET] + 20);
+        }
+        if (open_stroke_effect) {
+            ctx.stroke();
+        }
+
+        requestAnimationFrame(function () {
+            raf();
+        });
+    };
 
 
 </script>
