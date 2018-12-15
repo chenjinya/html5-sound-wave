@@ -52,6 +52,34 @@
             /*margin-top: -100%;*/
             background: #000;
         }
+
+        ul,
+        li {
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+
+        ul {
+            margin: 2px;
+            border: 1px solid #EEE;
+        }
+
+        li {
+            background: #EEE;
+            margin: 2px;
+            padding: 4px 8px;
+        }
+
+        li a {
+            color: #000;
+            cursor: pointer;
+            display: block;
+        }
+
+        li a:hover {
+            color: #999;
+        }
     </style>
 </head>
 
@@ -60,13 +88,34 @@
     <!--<video id="Media" src="/wave2.mp4" autoplay ></video>-->
     <audio id="Media" src="./test.mp3" controls></audio>
     <canvas id="Wave"></canvas>
-    <button onclick="javascript: waveStyle = 'none' ">None</button>
+    <ul>
+        <li>
+            <a onclick="javascript: Media.src = './test1.mp3'; Media.play();">Music 1</a>
+        </li>
+        <li>
+            <a onclick="javascript: Media.src = './test2.mp3';Media.play();">Music 2</a>
+        </li>
+        <li>
+            <a onclick="javascript: Media.src = './test3.mp3';Media.play();">Music 3</a>
+        </li>
+        <li>
+            <a onclick="javascript: Media.src = './test4.mp3';Media.play();">Music 4</a>
+        </li>
+        <li>
+            <a onclick="javascript: Media.src = './test5.mp3';Media.play();">Music 5</a>
+        </li>
+    </ul>
+    <button onclick="javascript: waveStyle = 'none'; open_stroke_effect= true; ">None</button>
     <button onclick="javascript: open_byte_value = !open_byte_value ">Bytes</button>
-    <button onclick="javascript: open_stroke_effect = !open_stroke_effect ">Stroke</button>
+    <button onclick="javascript: open_stroke_effect = !open_stroke_effect;  waveStyle == 'curve' ?  waveStyle =  'none' : null; ">Stroke</button>
     <button onclick="javascript: waveStyle = 'curve'; open_stroke_effect = false; ">Curve</button>
-    <button onclick="javascript: waveStyle = 'block mirror' ">Block Mirror</button>
-    <button onclick="javascript: waveStyle = 'block stroke' ">Block Stroke</button>
-    <button onclick="javascript: waveStyle = 'block top' ">Block Top</button>
+
+    <button onclick="javascript: waveStyle = 'rect' ">Rect</button>
+    <button onclick="javascript: waveStyle = 'rect mirror' ">Rect Mirror</button>
+    <button onclick="javascript: waveStyle = 'rect mirror2' ">Rect Mirror 2</button>
+
+    <button onclick="javascript: waveStyle = 'rect top' ">Rect Top</button>
+
     <button onclick="javascript: waveStyle = 'block' ">Block</button>
     <button onclick="javascript: waveStyle = 'block pure' ">Block Pure</button>
     <button onclick="javascript: waveStyle = 'block colorful' ">Block Colorful</button>
@@ -100,19 +149,20 @@
     gainnode.connect(audioCtx.destination);
     gainnode.gain.value = 1;
     // analyser.fftSize = 2048;
-    analyser.fftSize = 512;
+    // analyser.fftSize = 64;
     let byteDataCount = analyser.frequencyBinCount;
     let byteData = new Uint8Array(byteDataCount);
     let byteDataSample = byteData;
 
     //global constant
     const ctx = Wave.getContext("2d");
-    const COLUMN_COUNT = 64;//列数
-    const SAMPLE_OFFSET = analyser.fftSize / 2 / COLUMN_COUNT;// COLUMN_COUNT;//采样率
+    const COLUMN_COUNT = 16;//列数
+    analyser.fftSize = COLUMN_COUNT * 2;
+    const SAMPLE_OFFSET = analyser.frequencyBinCount / COLUMN_COUNT;// COLUMN_COUNT;//采样率
     const COLUMN_WIDTH = (Wave.width / COLUMN_COUNT);
     const BYTE_MAX = 256;
     const COLUMN_HEIGHT_RATE = Wave.height / BYTE_MAX;
-    console.log('canvas width', Wave.width, "column width", COLUMN_WIDTH, 'column count', COLUMN_COUNT)
+    console.log('canvas width', Wave.width, "column width", COLUMN_WIDTH, 'column count', COLUMN_COUNT, 'sample offset', SAMPLE_OFFSET)
 
     //global variable
     let open_stroke_effect = true;
@@ -128,7 +178,7 @@
 
     }
 
-    const style_block_mirror = function (col) {
+    const style_rect_mirror = function (col) {
         const coloumnHeight = COLUMN_HEIGHT_RATE * byteData[col * SAMPLE_OFFSET];
         const coloumnMargin = 4;
         const color = '#FFF';
@@ -187,8 +237,13 @@
         ctx.lineJoin = "round";
         ctx.strokeStyle = gradient;
 
+        const _y = Wave.height - coloumnHeight;
+        if (col == 0) {
+            ctx.beginPath();
+            ctx.moveTo(0, _y);
+        }
         // console.log(col * COLUMN_WIDTH);
-        ctx.lineTo(col * COLUMN_WIDTH + COLUMN_WIDTH / 2, Wave.height - coloumnHeight);
+        ctx.lineTo(col * COLUMN_WIDTH + COLUMN_WIDTH / 2, _y);
         style_addon_shadow(color);
 
 
@@ -217,7 +272,24 @@
 
 
     }
-    const style_block_stroke = function (col) {
+
+    const style_rect_mirror2 = function (col) {
+        // style_column_animate(col);
+        const coloumnHeight = COLUMN_HEIGHT_RATE * byteData[col * SAMPLE_OFFSET];
+        const coloumnMargin = 4;
+        const color = '#FFF';
+        const center_x = Wave.width / 2;
+        const column_w = COLUMN_WIDTH / 2;
+        ctx.strokeStyle = color;
+
+        ctx.strokeStyle = color;
+        style_addon_shadow(color);
+        ctx.strokeRect(center_x + col * column_w + coloumnMargin, Wave.height, column_w, -coloumnHeight);
+        ctx.strokeRect(center_x - col * column_w + coloumnMargin, Wave.height, column_w, -coloumnHeight);
+
+    }
+
+    const style_rect = function (col) {
         style_column_animate(col);
         const coloumnHeight = COLUMN_HEIGHT_RATE * byteData[col * SAMPLE_OFFSET];
         const coloumnMargin = 4;
@@ -240,7 +312,7 @@
     }
 
 
-    const style_block_top = function (col) {
+    const style_rect_top = function (col) {
         const coloumnHeight = COLUMN_HEIGHT_RATE * byteData[col * SAMPLE_OFFSET];
         const coloumnMargin = 4;
         const color = '#FFF';
@@ -357,12 +429,7 @@
 
             //logMonitor.innerHTML = byteData.join(",");
             if (open_stroke_effect) {
-                ctx.beginPath();
-                if (wave_type == 'wave') {
-                    ctx.moveTo(0, Wave.height - 128 * COLUMN_HEIGHT_RATE);
-                } else {
-                    ctx.moveTo(0, Wave.height);
-                }
+
 
             }
 
@@ -380,11 +447,17 @@
                     case 'curve':
                         style_curve(i);
                         break;
-                    case 'block mirror':
-                        style_block_mirror(i);
+                    case 'rect mirror':
+                        style_rect_mirror(i);
                         break;
-                    case 'block stroke':
-                        style_block_stroke(i);
+                    case 'rect mirror2':
+                        style_rect_mirror2(i);
+                        break;
+                    case 'rect':
+                        style_rect(i);
+                        break;
+                    case 'rect top':
+                        style_rect_top(i);
                         break;
                     case 'block':
                         style_block(i);
@@ -395,11 +468,9 @@
                     case 'block pure':
                         style_block_pure(i);
                         break;
-                    case 'block top':
-                        style_block_top(i);
-                        break;
+
                     default:
-                    // style_curve(i);
+                    // style_rect_mirror2(i);
                 }
 
                 if (open_stroke_effect) {
