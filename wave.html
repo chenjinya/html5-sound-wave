@@ -7,7 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>波形</title>
     <style>
-        #media {}
+        #Media {}
 
         input {
             border: 1px solid #EEE;
@@ -48,7 +48,7 @@
             box-shadow: 1px 1px 2px #AAA;
         }
 
-        #wave {
+        #Wave {
             /*margin-top: -100%;*/
             background: #000;
         }
@@ -57,11 +57,11 @@
 
 <body>
 
-    <!--<video id="media" src="/wave2.mp4" autoplay ></video>-->
-    <audio id="media" src="./test.mp3" controls></audio>
-    <canvas id="wave"></canvas>
+    <!--<video id="Media" src="/wave2.mp4" autoplay ></video>-->
+    <audio id="Media" src="./test.mp3" controls></audio>
+    <canvas id="Wave"></canvas>
     <button onclick="javascript: waveStyle = 'none' ">None</button>
-    <button onclick="javascript: open_fb_num = !open_fb_num ">Bytes</button>
+    <button onclick="javascript: open_byte_value = !open_byte_value ">Bytes</button>
     <button onclick="javascript: open_stroke_effect = !open_stroke_effect ">Stroke</button>
     <button onclick="javascript: waveStyle = 'curve'; open_stroke_effect = false; ">Curve</button>
     <button onclick="javascript: waveStyle = 'block mirror' ">Block Mirror</button>
@@ -71,282 +71,308 @@
     <button onclick="javascript: waveStyle = 'block pure' ">Block Pure</button>
     <button onclick="javascript: waveStyle = 'block colorful' ">Block Colorful</button>
 
-    <div id='logMonitor' class="log">
-
-    </div>
+    <button onclick="javascript: wave_type = wave_type == 'wave' ? 'frequency' : 'wave'; ">Switch Wave Type</button>
+    <div id="LogMonitor"></div>
 </body>
 
-<script src="./webaudit.js">
-</script>
+<!-- <script src="./webaudit.js"></script> -->
 <script src="./vconsole.min.js"></script>
 <script>
-    var vConsole = new VConsole();
+    // var vConsole = new VConsole();
     const _AudioContext = window.AudioContext ? window.AudioContext : window.webkitAudioContext;
     const audioCtx = new _AudioContext(); // define
-    const media = document.getElementById('media');
-    const wave = document.getElementById('wave');
-    const logMonitor = document.getElementById('logMonitor');
+    const Media = document.getElementById('Media');
+    const Wave = document.getElementById('Wave');
+    const LogMonitor = document.getElementById('LogMonitor');
     let waveStyle = '';
-    wave.width = document.body.clientWidth;
-    wave.height = 200;
-    media.load();
+    Wave.width = document.body.clientWidth;
+    Wave.height = 200;
+    Media.crossOrigin = "anonymous";
+    Media.load();
     let analyser = audioCtx.createAnalyser();
     let gainnode = audioCtx.createGain();
 
-    analyser.minDecibels = -90;
-    analyser.maxDecibels = -10;
-    let source = audioCtx.createMediaElementSource(media);
+    // analyser.minDecibels = -90;
+    // analyser.maxDecibels = -10;
+    let source = audioCtx.createMediaElementSource(Media);
     source.connect(analyser);
     analyser.connect(gainnode);
     gainnode.connect(audioCtx.destination);
     gainnode.gain.value = 1;
-    analyser.fftSize = 2048;
-    let fbl = analyser.frequencyBinCount;
-    let fd = new Uint8Array(fbl);
+    // analyser.fftSize = 2048;
+    analyser.fftSize = 512;
+    let byteDataCount = analyser.frequencyBinCount;
+    let byteData = new Uint8Array(byteDataCount);
+    let byteDataSample = byteData;
 
-    const ctx = wave.getContext("2d");
-    const column_count = 32;//列数
-    const offset = 1024 / column_count;// column_count;//采样率
-    const column_width = Math.floor(wave.width / column_count);
+    //global constant
+    const ctx = Wave.getContext("2d");
+    const COLUMN_COUNT = 64;//列数
+    const SAMPLE_OFFSET = analyser.fftSize / 2 / COLUMN_COUNT;// COLUMN_COUNT;//采样率
+    const COLUMN_WIDTH = (Wave.width / COLUMN_COUNT);
+    const BYTE_MAX = 256;
+    const COLUMN_HEIGHT_RATE = Wave.height / BYTE_MAX;
+    console.log('canvas width', Wave.width, "column width", COLUMN_WIDTH, 'column count', COLUMN_COUNT)
 
-    console.log("width", column_width, 'count', column_count)
-    const column_height_rate = wave.height / 256;
+    //global variable
     let open_stroke_effect = true;
-    let open_fb_num = false;
-    let top_row_block_y = [];
+    let open_byte_value = false;
+    let wave_type = 'frequency';
+    let top_row_y = [];
 
-    media.addEventListener('canplay', function () {
+    const style_addon_shadow = function (color) {
+        ctx.shadowColor = color;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+        ctx.shadowBlur = 10;
 
+    }
 
+    const style_block_mirror = function (col) {
+        const coloumnHeight = COLUMN_HEIGHT_RATE * byteData[col * SAMPLE_OFFSET];
+        const coloumnMargin = 4;
+        const color = '#FFF';
+        ctx.strokeStyle = color;
 
-        const style_addon_shadow = function (color) {
-            ctx.shadowColor = color;
-            ctx.shadowOffsetX = 0;
-            ctx.shadowOffsetY = 0;
-            ctx.shadowBlur = 10;
+        ctx.strokeStyle = color;
+        style_addon_shadow(color);
+        ctx.strokeRect(col * COLUMN_WIDTH + coloumnMargin, Wave.height / 2 + coloumnHeight / 2, 2, -coloumnHeight);
 
-        }
+        // style_addon_shadow(color);
+    }
 
-        const style_block_mirror = function (col) {
-            const coloumnHeight = column_height_rate * fd[col * offset];
-            const coloumnMargin = 4;
-            const color = '#FFF';
-            ctx.strokeStyle = color;
+    let style_curve_offset = 0;
+    const style_curve = function (col) {
+        const coloumnHeight = COLUMN_HEIGHT_RATE * byteData[col * SAMPLE_OFFSET];
 
-            ctx.strokeStyle = color;
-            style_addon_shadow(color);
-            ctx.strokeRect(col * column_width + coloumnMargin, wave.height / 2 + coloumnHeight / 2, 2, -coloumnHeight);
+        const preColumnHeight = col - 1 >= 0 ? COLUMN_HEIGHT_RATE * byteData[(col - 1) * SAMPLE_OFFSET] : 0;
+        const nexColumnHeight = col + 1 < COLUMN_COUNT ? COLUMN_HEIGHT_RATE * byteData[(col + 1) * SAMPLE_OFFSET] : 0;
 
-            // style_addon_shadow(color);
-        }
+        const coloumnMargin = 4;
+        const color = '#FFF';
+        ctx.strokeStyle = color;
 
-        let style_curve_offset = 0;
-        const style_curve = function (col) {
-            const coloumnHeight = column_height_rate * fd[col * offset];
+        // style_addon_shadow(color);
+        ctx.beginPath();
+        const preY = Wave.height - (preColumnHeight);
+        const nexY = Wave.height - (coloumnHeight);
+        const curY = Wave.height - coloumnHeight;
+        const horizontal = Wave.height / 2;
+        ctx.moveTo(style_curve_offset + col * COLUMN_WIDTH, horizontal);
 
-            const preColumnHeight = col - 1 >= 0 ? column_height_rate * fd[(col - 1) * offset] : 0;
-            const nexColumnHeight = col + 1 < column_count ? column_height_rate * fd[(col + 1) * offset] : 0;
-
-            const coloumnMargin = 4;
-            const color = '#FFF';
-            ctx.strokeStyle = color;
-
-            // style_addon_shadow(color);
-            ctx.beginPath();
-            const preY = wave.height - (preColumnHeight);
-            const nexY = wave.height - (coloumnHeight);
-            const curY = wave.height - coloumnHeight;
-            const horizontal = wave.height / 2;
-            ctx.moveTo(style_curve_offset + col * column_width, horizontal);
-
-            ctx.quadraticCurveTo(
-                style_curve_offset + col * column_width + column_width / 4, horizontal - coloumnHeight,
-                style_curve_offset + col * column_width + column_width / 2, horizontal);
-            ctx.quadraticCurveTo(
-                style_curve_offset + col * column_width + column_width / 4 * 3, horizontal + coloumnHeight,
-                style_curve_offset + col * column_width + column_width, horizontal);
-            ctx.stroke();
+        ctx.quadraticCurveTo(
+            style_curve_offset + col * COLUMN_WIDTH + COLUMN_WIDTH / 4, horizontal - coloumnHeight,
+            style_curve_offset + col * COLUMN_WIDTH + COLUMN_WIDTH / 2, horizontal);
+        ctx.quadraticCurveTo(
+            style_curve_offset + col * COLUMN_WIDTH + COLUMN_WIDTH / 4 * 3, horizontal + coloumnHeight,
+            style_curve_offset + col * COLUMN_WIDTH + COLUMN_WIDTH, horizontal);
+        ctx.stroke();
 
 
 
-        }
+    }
 
-        const style_stroke = function (col) {
-            open_stroke_effect = true;
-            const coloumnHeight = column_height_rate * fd[col * offset];
+    const style_stroke = function (col) {
+        open_stroke_effect = true;
+        const coloumnHeight = COLUMN_HEIGHT_RATE * byteData[col * SAMPLE_OFFSET];
 
-            const coloumnMargin = 4;
-            const color = '#FFF';
-            var gradient = ctx.createLinearGradient(0, 0, 170, 0);
-            gradient.addColorStop("0", "magenta");
-            gradient.addColorStop("0.5", "blue");
-            gradient.addColorStop("1.0", "red");
-            // 用渐变进行填充
-            ctx.lineWidth = 2;
-            ctx.lineJoin = "round";
-            ctx.strokeStyle = gradient;
+        const coloumnMargin = 0;
+        const color = '#FFF';
+        var gradient = ctx.createLinearGradient(0, 0, 170, 0);
+        gradient.addColorStop("0", "magenta");
+        gradient.addColorStop("0.5", "blue");
+        gradient.addColorStop("1.0", "red");
+        // 用渐变进行填充
+        ctx.lineWidth = 2;
+        ctx.lineJoin = "round";
+        ctx.strokeStyle = gradient;
 
-            ctx.lineTo(col * column_width + column_width / 2, wave.height - coloumnHeight - 4);
-
-            // style_addon_shadow(color);
-
-            // ctx.strokeStyle = color;
+        // console.log(col * COLUMN_WIDTH);
+        ctx.lineTo(col * COLUMN_WIDTH + COLUMN_WIDTH / 2, Wave.height - coloumnHeight);
+        style_addon_shadow(color);
 
 
-        }
 
-        let style_column_animate_data = [];
-        const style_column_animate = function (col) {
+    }
 
-            const coloumnHeight = column_height_rate * fd[col * offset];
-            const coloumnMargin = 4;
+    let style_column_animate_data = [];
+    const style_column_animate = function (col) {
 
-            if (!style_column_animate_data[col] && coloumnHeight > column_height_rate * 200) {
-                style_column_animate_data[col] = wave.height;
+        const coloumnHeight = COLUMN_HEIGHT_RATE * byteData[col * SAMPLE_OFFSET];
+        const coloumnMargin = 4;
 
-            }
-            if (style_column_animate_data[col]) {
-                ctx.strokeStyle = "#AAA";
-                style_addon_shadow(`#FFF`);
-                ctx.strokeRect(col * column_width + coloumnMargin, style_column_animate_data[col], column_width - coloumnMargin, column_width);
-                style_column_animate_data[col]--;
-                if (style_column_animate_data[col] <= 0) {
-                    style_column_animate_data[col] = null;
-                }
-            }
-
+        if (!style_column_animate_data[col] && coloumnHeight > COLUMN_HEIGHT_RATE * 200) {
+            style_column_animate_data[col] = Wave.height;
 
         }
-        const style_block_stroke = function (col) {
-            style_column_animate(col);
-            const coloumnHeight = column_height_rate * fd[col * offset];
-            const coloumnMargin = 4;
-            ctx.strokeStyle = "#FFF";
+        if (style_column_animate_data[col] !== null) {
+            ctx.strokeStyle = "#AAA";
             style_addon_shadow(`#FFF`);
-            ctx.strokeRect(col * column_width + coloumnMargin, wave.height, column_width - coloumnMargin, -coloumnHeight);
+            ctx.strokeRect(col * COLUMN_WIDTH + coloumnMargin, style_column_animate_data[col], COLUMN_WIDTH - coloumnMargin, COLUMN_WIDTH - coloumnMargin);
+            style_column_animate_data[col]--;
+            if (style_column_animate_data[col] <= - COLUMN_WIDTH) {
+                style_column_animate_data[col] = null;
+            }
         }
 
 
-        const style_block_top = function (col) {
-            const coloumnHeight = column_height_rate * fd[col * offset];
-            const coloumnMargin = 4;
-            const color = '#FFF';
-            ctx.strokeStyle = color;
+    }
+    const style_block_stroke = function (col) {
+        style_column_animate(col);
+        const coloumnHeight = COLUMN_HEIGHT_RATE * byteData[col * SAMPLE_OFFSET];
+        const coloumnMargin = 4;
+        let topBlockY = coloumnHeight;
+        const color = '#FFF';
+        ctx.strokeStyle = color;
+        style_addon_shadow(color);
+
+        ctx.strokeRect(col * COLUMN_WIDTH + coloumnMargin, Wave.height, COLUMN_WIDTH - coloumnMargin, -coloumnHeight);
+        // if (topBlockY > 0 && (!top_row_y[col] || Math.abs(topBlockY) < Math.abs(top_row_y[col].y))) {
+        //     if (!top_row_y[col]) top_row_y[col] = {};
+        //     top_row_y[col].y = topBlockY;
+        //     top_row_y[col].color = color;
+        // }
+        // if (top_row_y[col]) {
+        //     top_row_y[col].y += 1;
+        //     ctx.strokeStyle = top_row_y[col].color;
+        //     ctx.strokeRect(col * COLUMN_WIDTH + coloumnMargin, Wave.height, COLUMN_WIDTH - coloumnMargin, - top_row_y[col].y);
+        // }
+    }
+
+
+    const style_block_top = function (col) {
+        const coloumnHeight = COLUMN_HEIGHT_RATE * byteData[col * SAMPLE_OFFSET];
+        const coloumnMargin = 4;
+        const color = '#FFF';
+        ctx.strokeStyle = color;
+        style_addon_shadow(color);
+        ctx.strokeRect(col * COLUMN_WIDTH + coloumnMargin, Wave.height - coloumnHeight, COLUMN_WIDTH - coloumnMargin, 4);
+        let topBlockY = Wave.height - coloumnHeight;
+        const topcolor = 'yellow';
+        if (topBlockY > 0 && (!top_row_y[col] || Math.abs(topBlockY) < Math.abs(top_row_y[col].y))) {
+            if (!top_row_y[col]) top_row_y[col] = {};
+            top_row_y[col].y = topBlockY;
+            top_row_y[col].color = topcolor;
+        }
+        if (top_row_y[col]) {
+            top_row_y[col].y += 1;
+            ctx.strokeStyle = top_row_y[col].color;
+            ctx.strokeRect(col * COLUMN_WIDTH + coloumnMargin, top_row_y[col].y, COLUMN_WIDTH - coloumnMargin, 4);
+
+        }
+    }
+
+    const style_block = function (col) {
+        const coloumnHeight = COLUMN_HEIGHT_RATE * byteData[col * SAMPLE_OFFSET];
+        const rowHeight = 16;
+        const rowMargin = 4;
+        const coloumnMargin = 4;
+        const rowCount = Math.round(coloumnHeight / rowHeight)
+        for (let h = 0; h < rowCount; h++) {
+            r = 0 + 16 * h;
+            g = 0 + 16 * h;
+            b = 0 + 16 * h;
+            ctx.fillStyle = `rgb(${r},${g},${b})`;
+            style_addon_shadow(`rgb(${r},${g},${b})`);
+            ctx.fillRect(col * COLUMN_WIDTH + coloumnMargin, Wave.height - h * rowHeight, COLUMN_WIDTH - coloumnMargin, rowHeight - rowMargin);
+        }
+    }
+
+    const style_block_pure = function (col) {
+        const coloumnHeight = COLUMN_HEIGHT_RATE * byteData[col * SAMPLE_OFFSET];
+        const rowHeight = 16;
+        const rowMargin = 4;
+        const coloumnMargin = 4;
+        const rowCount = Math.round(coloumnHeight / rowHeight)
+        for (let h = 0; h < rowCount; h++) {
+            ctx.fillStyle = `rgb(255,255,255)`;
+            style_addon_shadow(`rgb(255,255,255)`);
+            ctx.fillRect(col * COLUMN_WIDTH + coloumnMargin, Wave.height - h * rowHeight, COLUMN_WIDTH - coloumnMargin, rowHeight - rowMargin);
+        }
+    }
+
+
+    const style_block_colorful = function (col) {
+        const coloumnHeight = COLUMN_HEIGHT_RATE * byteData[col * SAMPLE_OFFSET];
+        const rowHeight = 16;
+        const rowMargin = 2;
+        const coloumnMargin = 2;
+        const rowCount = Math.round(coloumnHeight / rowHeight)
+        const maxRowCount = Math.floor(Wave.height / rowHeight)
+        const colorByte = 256 / rowCount;
+        // console.log('color byte', colorByte);
+        const R = 250;
+        const G = 180;
+        const B = 0;
+        let r = 0, g = G, b = B;
+        let topBlockY = 0;
+        let color = 'red';
+        for (let h = 0; h < rowCount; h++) {
+            r = 0 + colorByte * h;
+            if (r > R) {
+                r = R;
+                g = g - colorByte * (rowCount - h);
+            } else {
+                g = G;
+            }
+            if (h == maxRowCount - 1) {
+                r = R;
+                g = 0;
+            }
+            b = B;
+            color = `rgb(${r},${g},${b})`;
+            ctx.fillStyle = color;
             style_addon_shadow(color);
-            ctx.strokeRect(col * column_width + coloumnMargin, wave.height - coloumnHeight, column_width - coloumnMargin, 4);
-            let topBlockY = wave.height - coloumnHeight;
-            const topcolor = 'yellow';
-            if (topBlockY > 0 && (!top_row_block_y[col] || Math.abs(topBlockY) < Math.abs(top_row_block_y[col].y))) {
-                if (!top_row_block_y[col]) top_row_block_y[col] = {};
-                top_row_block_y[col].y = topBlockY;
-                top_row_block_y[col].color = topcolor;
-            }
-            if (top_row_block_y[col]) {
-                top_row_block_y[col].y += 1;
-                ctx.strokeStyle = top_row_block_y[col].color;
-                ctx.strokeRect(col * column_width + coloumnMargin, top_row_block_y[col].y, column_width - coloumnMargin, 4);
-
-            }
+            let height = Wave.height - h * rowHeight;
+            ctx.fillRect(col * COLUMN_WIDTH + coloumnMargin, height, COLUMN_WIDTH - coloumnMargin, rowHeight - rowMargin);
+            topBlockY = height;
         }
-
-        const style_block = function (col) {
-            const coloumnHeight = column_height_rate * fd[col * offset];
-            const rowHeight = 16;
-            const rowMargin = 4;
-            const coloumnMargin = 4;
-            const rowCount = Math.round(coloumnHeight / rowHeight)
-            for (let h = 0; h < rowCount; h++) {
-                r = 0 + 16 * h;
-                g = 0 + 16 * h;
-                b = 0 + 16 * h;
-                ctx.fillStyle = `rgb(${r},${g},${b})`;
-                style_addon_shadow(`rgb(${r},${g},${b})`);
-                ctx.fillRect(col * column_width + coloumnMargin, wave.height - h * rowHeight, column_width - coloumnMargin, rowHeight - rowMargin);
-            }
+        if (topBlockY > 0 && (!top_row_y[col] || Math.abs(topBlockY) < Math.abs(top_row_y[col].y))) {
+            if (!top_row_y[col]) top_row_y[col] = {};
+            top_row_y[col].y = topBlockY;
+            top_row_y[col].color = color;
         }
+        if (top_row_y[col]) {
+            top_row_y[col].y += 2;
+            ctx.fillStyle = top_row_y[col].color;
+            ctx.fillRect(col * COLUMN_WIDTH + coloumnMargin, top_row_y[col].y, COLUMN_WIDTH - coloumnMargin, rowHeight - 2 * rowMargin);
 
-        const style_block_pure = function (col) {
-            const coloumnHeight = column_height_rate * fd[col * offset];
-            const rowHeight = 16;
-            const rowMargin = 4;
-            const coloumnMargin = 4;
-            const rowCount = Math.round(coloumnHeight / rowHeight)
-            for (let h = 0; h < rowCount; h++) {
-                ctx.fillStyle = `rgb(255,255,255)`;
-                style_addon_shadow(`rgb(255,255,255)`);
-                ctx.fillRect(col * column_width + coloumnMargin, wave.height - h * rowHeight, column_width - coloumnMargin, rowHeight - rowMargin);
-            }
         }
+    }
+    Media.addEventListener('canplay', function () {
 
-
-        const style_block_colorful = function (col) {
-            const coloumnHeight = column_height_rate * fd[col * offset];
-            const rowHeight = 16;
-            const rowMargin = 2;
-            const coloumnMargin = 2;
-            const rowCount = Math.round(coloumnHeight / rowHeight)
-            const maxRowCount = Math.floor(wave.height / rowHeight)
-            const colorByte = 256 / rowCount;
-            // console.log('color byte', colorByte);
-            const R = 250;
-            const G = 180;
-            const B = 0;
-            let r = 0, g = G, b = B;
-            let topBlockY = 0;
-            let color = 'red';
-            for (let h = 0; h < rowCount; h++) {
-                r = 0 + colorByte * h;
-                if (r > R) {
-                    r = R;
-                    g = g - colorByte * (rowCount - h);
-                } else {
-                    g = G;
-                }
-                if (h == maxRowCount - 1) {
-                    r = R;
-                    g = 0;
-                }
-                b = B;
-                color = `rgb(${r},${g},${b})`;
-                ctx.fillStyle = color;
-                style_addon_shadow(color);
-                let height = wave.height - h * rowHeight;
-                ctx.fillRect(col * column_width + coloumnMargin, height, column_width - coloumnMargin, rowHeight - rowMargin);
-                topBlockY = height;
-            }
-            if (topBlockY > 0 && (!top_row_block_y[col] || Math.abs(topBlockY) < Math.abs(top_row_block_y[col].y))) {
-                if (!top_row_block_y[col]) top_row_block_y[col] = {};
-                top_row_block_y[col].y = topBlockY;
-                top_row_block_y[col].color = color;
-            }
-            if (top_row_block_y[col]) {
-                top_row_block_y[col].y += 2;
-                ctx.fillStyle = top_row_block_y[col].color;
-                ctx.fillRect(col * column_width + coloumnMargin, top_row_block_y[col].y, column_width - coloumnMargin, rowHeight - 2 * rowMargin);
-
-            }
-        }
-
-
-        let counting = 0;
         const raf = function () {
             // logMonitor.innerHTML = "raf enter";
-            let r = 0;
-            let g = 0;
-            let b = 0;
-            ctx.lineWidth = 1;
-            ctx.clearRect(0, 0, wave.width, wave.height)
-            analyser.getByteFrequencyData(fd);
-            // console.log(fd)
-            // analyser.getByteTimeDomainData(fd);
 
-            //logMonitor.innerHTML = fd.join(",");
-            if (open_stroke_effect) {
-                ctx.beginPath();
-                ctx.moveTo(0, wave.height);
+            ctx.lineWidth = 1;
+            ctx.clearRect(0, 0, Wave.width, Wave.height)
+            if (wave_type == 'wave') {
+                analyser.getByteTimeDomainData(byteData);
+            } else {
+                analyser.getByteFrequencyData(byteData);
             }
 
-            for (let i = 0; i < column_count; i++) {
+            // console.log(byteData)
+            // 
+
+            //logMonitor.innerHTML = byteData.join(",");
+            if (open_stroke_effect) {
+                ctx.beginPath();
+                if (wave_type == 'wave') {
+                    ctx.moveTo(0, Wave.height - 128 * COLUMN_HEIGHT_RATE);
+                } else {
+                    ctx.moveTo(0, Wave.height);
+                }
+
+            }
+
+            for (let i = 0; i < COLUMN_COUNT; i++) {
+
+                byteDataSample = byteData;
+                // for (let _si = i * SAMPLE_OFFSET; _si < (i + 1) * SAMPLE_OFFSET; _si++) {
+                //     byteDataSample[i] += byteData[_si] == 0 ? 0 : byteData[_si];
+                // }
+                // LogMonitor.innerHTML = byteDataSample.join(",");
                 switch (waveStyle) {
                     case 'stroke':
                         // style_stroke(i);
@@ -381,7 +407,7 @@
                 }
 
                 // rate height
-                open_fb_num && ctx.strokeText('' + fd[i * offset], i * column_width, wave.height - column_height_rate * fd[i * offset] + 20);
+                open_byte_value && ctx.strokeText('' + byteData[i * SAMPLE_OFFSET], i * COLUMN_WIDTH, Wave.height - COLUMN_HEIGHT_RATE * byteData[i * SAMPLE_OFFSET] + 20);
             }
             if (open_stroke_effect) {
                 ctx.stroke();
