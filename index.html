@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>波形</title>
+    <style>
+        #Media {}
+
+        input {
+            border: 1px solid #EEE;
+            padding: 4px 8px;
+            margin: 4px;
+            outline: none;
+        }
+
+        input:hover {
+            border-color: #999;
+            box-shadow: 1px 1px 2px #EEE;
+        }
+
+        input:focus {
+            border-color: #333;
+            box-shadow: 1px 1px 2px #AAA;
+        }
+
+        button {
+            border: 1px solid #EEE;
+            background: #EEE;
+            color: #000;
+            padding: 4px 8px;
+            border-radius: 4px;
+            outline: none;
+            margin: 4px;
+            min-width: 80px;
+        }
+
+        button:hover {
+            background: #DDD;
+            box-shadow: 1px 1px 2px #EEE;
+        }
+
+        button:active {
+            background: #000;
+            color: #FFF;
+            box-shadow: 1px 1px 2px #AAA;
+        }
+
+        #Wave {
+            /*margin-top: -100%;*/
+            background: #000;
+        }
+
+        ul,
+        li {
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+
+        ul {
+            margin: 2px;
+            border: 1px solid #EEE;
+        }
+
+        li {
+            background: #EEE;
+            margin: 2px;
+            padding: 4px 8px;
+        }
+
+        li a {
+            color: #000;
+            cursor: pointer;
+            display: block;
+        }
+
+        li a:hover {
+            color: #999;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!--<video id="Media" src="/wave2.mp4" autoplay ></video>-->
+    <audio id="Media" src="./test.mp3" controls></audio>
+    <canvas id="Wave"></canvas>
+    <ul>
+        <li>
+            <a onclick="javascript: Media.src = './test0.mp3'; Media.play();">Music 0</a>
+        </li>
+        <li>
+            <a onclick="javascript: Media.src = './test1.mp3'; Media.play();">Music 1</a>
+        </li>
+        <li>
+            <a onclick="javascript: Media.src = './test2.mp3';Media.play();">Music 2</a>
+        </li>
+        <li>
+            <a onclick="javascript: Media.src = './test3.mp3';Media.play();">Music 3</a>
+        </li>
+        <li>
+            <a onclick="javascript: Media.src = './test4.mp3';Media.play();">Music 4</a>
+        </li>
+        <li>
+            <a onclick="javascript: Media.src = './test5.mp3';Media.play();">Music 5</a>
+        </li>
+    </ul>
+    <button onclick="javascript: waveStyle = 'none'; open_stroke_effect= true; ">None</button>
+    <button onclick="javascript: open_byte_value = !open_byte_value ">Bytes</button>
+    <button onclick="javascript: open_stroke_effect = !open_stroke_effect;  waveStyle == 'curve' ?  waveStyle =  'none' : null; ">Stroke</button>
+    <button onclick="javascript: waveStyle = 'curve'; open_stroke_effect = false; ">Curve</button>
+
+    <button onclick="javascript: waveStyle = 'rect' ">Rect</button>
+    <button onclick="javascript: waveStyle = 'rect mirror' ">Rect Mirror</button>
+    <button onclick="javascript: waveStyle = 'rect mirror2' ">Rect Mirror 2</button>
+
+    <button onclick="javascript: waveStyle = 'rect top' ">Rect Top</button>
+
+    <button onclick="javascript: waveStyle = 'block' ">Block</button>
+    <button onclick="javascript: waveStyle = 'block pure' ">Block Pure</button>
+    <button onclick="javascript: waveStyle = 'block colorful' ">Block Colorful</button>
+    <hr>
+    <button onclick="javascript:  gainnode.gain.setValueAtTime(gainnode.gain.value ==  0 ? 1 : 0, audioCtx.currentTime); ">Mute</button>
+
+    <button onclick="javascript: wave_type = wave_type == 'wave' ? 'frequency' : 'wave'; ">Switch Wave Type</button>
+    <div id="LogMonitor"></div>
+</body>
+
+<script src="./webaudit.js"></script>
+
+<script src="./vconsole.min.js"></script>
+
+<script src="./app.js"></script>
+
+</html>
