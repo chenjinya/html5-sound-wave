@@ -12,7 +12,7 @@ class AudioWave {
         this.Gainnode = null
         this.ByteData = null
         this.BYTE_MAX = 256
-        this.COLUMN_COUNT = 16 //列数
+        this.COLUMN_COUNT = 32 //列数
         this.SAMPLE_OFFSET = 0
         this.COLUMN_WIDTH = 0
         this.COLUMN_HEIGHT_RATE = 0
@@ -137,6 +137,7 @@ if (isMobile) {
         audioWave = new AudioWave();
         // audioWave.filter = filter_stroke
     });
+
 }
 
 

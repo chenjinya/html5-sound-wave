@@ -111,7 +111,7 @@ const addon_column_animate = function (wave, col) {
         wave.WaveCtx.strokeStyle = "#AAA";
         // addon_shadow(`#FFF`);
         wave.WaveCtx.strokeRect(col * COLUMN_WIDTH + coloumnMargin, style_column_animate_data[col], COLUMN_WIDTH - coloumnMargin, COLUMN_WIDTH - coloumnMargin);
-        style_column_animate_data[col]--;
+        style_column_animate_data[col] -= 4;
         if (style_column_animate_data[col] <= - COLUMN_WIDTH) {
             style_column_animate_data[col] = null;
         }
@@ -119,6 +119,8 @@ const addon_column_animate = function (wave, col) {
 
 
 }
+
+let top_row_y = [];
 
 const filter_rect = function (wave, col) {
 
@@ -135,20 +137,20 @@ const filter_rect = function (wave, col) {
     wave.WaveCtx.strokeStyle = color;
     addon_shadow(color);
 
-    wave.WaveCtx.strokeRect(col * COLUMN_WIDTH + coloumnMargin, wave.WaveCanvas.height, COLUMN_WIDTH - coloumnMargin, -coloumnHeight);
-    // if (topBlockY > 0 && (!top_row_y[col] || Math.abs(topBlockY) < Math.abs(top_row_y[col].y))) {
-    //     if (!top_row_y[col]) top_row_y[col] = {};
-    //     top_row_y[col].y = topBlockY;
-    //     top_row_y[col].color = color;
-    // }
-    // if (top_row_y[col]) {
-    //     top_row_y[col].y += 1;
-    //     ctx.strokeStyle = top_row_y[col].color;
-    //     ctx.strokeRect(col * COLUMN_WIDTH + coloumnMargin, Wave.height, COLUMN_WIDTH - coloumnMargin, - top_row_y[col].y);
-    // }
+    // wave.WaveCtx.strokeRect(col * COLUMN_WIDTH + coloumnMargin, wave.WaveCanvas.height, COLUMN_WIDTH - coloumnMargin, -coloumnHeight);
+    if ((!top_row_y[col] || topBlockY > (top_row_y[col].y))) {
+        if (!top_row_y[col]) top_row_y[col] = {};
+        top_row_y[col].y = topBlockY;
+        top_row_y[col].color = color;
+    }
+    if (top_row_y[col]) {
+        top_row_y[col].y -= 4;
+        wave.WaveCtx.strokeStyle = top_row_y[col].color;
+        wave.WaveCtx.strokeRect(col * COLUMN_WIDTH + coloumnMargin, wave.WaveCanvas.height, COLUMN_WIDTH - coloumnMargin, - top_row_y[col].y);
+    }
 }
 
-let top_row_y = [];
+
 const filter_rect_top = function (wave, col) {
     const COLUMN_HEIGHT_RATE = wave.COLUMN_HEIGHT_RATE
     const COLUMN_WIDTH = wave.COLUMN_WIDTH
