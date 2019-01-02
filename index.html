@@ -86,7 +86,7 @@
 <body>
 
     <!--<video id="Media" src="/wave2.mp4" autoplay ></video>-->
-    <button onclick="run()">Load</button>
+    <button id="LoadAudio">Load</button>
     <audio id="Media" src="./test.mp3" controls></audio>
     <canvas id="Wave"></canvas>
     <ul>
@@ -109,24 +109,22 @@
             <a onclick="javascript: Media.src = './test5.mp3';Media.play();">Music 5</a>
         </li>
     </ul>
-    <button onclick="javascript: waveStyle = 'none'; open_stroke_effect= true; ">None</button>
-    <button onclick="javascript: open_byte_value = !open_byte_value ">Bytes</button>
-    <button onclick="javascript: open_stroke_effect = !open_stroke_effect;  waveStyle == 'curve' ?  waveStyle =  'none' : null; ">Stroke</button>
-    <button onclick="javascript: waveStyle = 'curve'; open_stroke_effect = false; ">Curve</button>
+    <button onclick="javascript: audioWave.filter = filter_stroke ">filter_stroke</button>
+    <button onclick="javascript: audioWave.filter = filter_rect_mirror ">filter_rect_mirror</button>
 
-    <button onclick="javascript: waveStyle = 'rect' ">Rect</button>
-    <button onclick="javascript: waveStyle = 'rect mirror' ">Rect Mirror</button>
-    <button onclick="javascript: waveStyle = 'rect mirror2' ">Rect Mirror 2</button>
+    <button onclick="javascript: audioWave.filter = filter_rect_mirror2 ">filter_rect_mirror2</button>
+    <button onclick="javascript: audioWave.filter = filter_rect ">filter_rect</button>
 
-    <button onclick="javascript: waveStyle = 'rect top' ">Rect Top</button>
+    <button onclick="javascript: audioWave.filter = filter_rect_top ">filter_rect_top</button>
 
-    <button onclick="javascript: waveStyle = 'block' ">Block</button>
-    <button onclick="javascript: waveStyle = 'block pure' ">Block Pure</button>
-    <button onclick="javascript: waveStyle = 'block colorful' ">Block Colorful</button>
+    <button onclick="javascript: audioWave.filter = filter_block ">filter_block</button>
+    <button onclick="javascript: audioWave.filter = filter_block_pure ">filter_block_pure</button>
+    <button onclick="javascript: audioWave.filter = filter_block_colorful ">filter_block_colorful</button>
     <hr>
-    <button onclick="javascript:  gainnode.gain.setValueAtTime(gainnode.gain.value ==  0 ? 1 : 0, audioCtx.currentTime); ">Mute</button>
+    <button onclick="javascript:  audioWave.Gainnode.gain.setValueAtTime(audioWave.Gainnode.gain.value ==  0 ? 1 : 0, audioWave.AudioCtx.currentTime); ">Mute</button>
 
-    <button onclick="javascript: wave_type = wave_type == 'wave' ? 'frequency' : 'wave'; ">Switch Wave Type</button>
+    <button onclick="javascript: audioWave.wave_type = audioWave.wave_type == 'wave' ? 'frequency' : 'wave'; ">Switch
+        Wave Type</button>
     <div id="LogMonitor"></div>
 </body>
 
@@ -135,5 +133,6 @@
 <script src="./vconsole.min.js"></script>
 <script src="./util.js"></script>
 <script src="./app.js"></script>
+<script src="./filter.js"></script>
 
 </html>
