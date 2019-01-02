@@ -127,5 +127,16 @@ class AudioWave {
 
 
 let audioWave = null;
-audioWave = new AudioWave();
-audioWave.MediaSource.play();
+const isMobile = /Mobile|iP(hone|od|ad)|Android|BlackBerry|IEMobile|Kindle|NetFront|Silk-Accelerated|(hpw|web)OS|Fennec|Minimo|Opera M(obi|ini)|Blazer|Dolfin|Dolphin|Skyfire|Zune/i.test(navigator.userAgent)
+if (isMobile) {
+    audioWave = new AudioWave();
+    audioWave.MediaSource.play();
+} else {
+    //audio policy
+    document.getElementById("LoadAudio").addEventListener('click', function () {
+        audioWave = new AudioWave();
+        // audioWave.filter = filter_stroke
+    });
+}
+
+

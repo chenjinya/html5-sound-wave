@@ -32,29 +32,29 @@ const filter_curve = function (wave, col) {
 
 }
 
-const filter_stroke = function (wave, col) {
+// const filter_stroke = function (wave, col) {
 
-    const coloumnHeight = wave.COLUMN_HEIGHT_RATE * wave.ByteData[col * wave.SAMPLE_OFFSET];
+//     const coloumnHeight = wave.COLUMN_HEIGHT_RATE * wave.ByteData[col * wave.SAMPLE_OFFSET];
 
-    const coloumnMargin = 0;
-    const color = '#FFF';
-    var gradient = wave.WaveCtx.createLinearGradient(0, 0, 170, 0);
-    gradient.addColorStop("0", "magenta");
-    gradient.addColorStop("0.5", "blue");
-    gradient.addColorStop("1.0", "red");
-    // 用渐变进行填充
-    wave.WaveCtx.lineWidth = 2;
-    wave.WaveCtx.lineJoin = "round";
-    wave.WaveCtx.strokeStyle = gradient;
+//     const coloumnMargin = 0;
+//     const color = '#FFF';
+//     var gradient = wave.WaveCtx.createLinearGradient(0, 0, 170, 0);
+//     gradient.addColorStop("0", "magenta");
+//     gradient.addColorStop("0.5", "blue");
+//     gradient.addColorStop("1.0", "red");
+//     // 用渐变进行填充
+//     wave.WaveCtx.lineWidth = 2;
+//     wave.WaveCtx.lineJoin = "round";
+//     wave.WaveCtx.strokeStyle = gradient;
 
-    const _y = wave.WaveCanvas.height - coloumnHeight;
-    if (col == 0) {
-        wave.WaveCtx.beginPath();
-        wave.WaveCtx.moveTo(0, _y);
-    }
-    // console.log(col * COLUMN_WIDTH);
-    wave.WaveCtx.lineTo(col * wave.COLUMN_WIDTH + wave.COLUMN_WIDTH / 2, _y);
-}
+//     const _y = wave.WaveCanvas.height - coloumnHeight;
+//     if (col == 0) {
+//         wave.WaveCtx.beginPath();
+//         wave.WaveCtx.moveTo(0, _y);
+//     }
+//     // console.log(col * COLUMN_WIDTH);
+//     wave.WaveCtx.lineTo(col * wave.COLUMN_WIDTH + wave.COLUMN_WIDTH / 2, _y);
+// }
 
 
 const filter_rect_mirror = function (wave, col) {
