@@ -128,3 +128,4 @@ class AudioWave {
 
 let audioWave = null;
 audioWave = new AudioWave();
+audioWave.MediaSource.play();
