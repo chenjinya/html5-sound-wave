@@ -47,7 +47,7 @@ const filter_stroke = function (wave, col) {
     wave.WaveCtx.lineJoin = "round";
     wave.WaveCtx.strokeStyle = gradient;
 
-    const _y = Wave.height - coloumnHeight;
+    const _y = wave.WaveCanvas.height - coloumnHeight;
     if (col == 0) {
         wave.WaveCtx.beginPath();
         wave.WaveCtx.moveTo(0, _y);
